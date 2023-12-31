@@ -1,9 +1,6 @@
-// sudoku.h
 #pragma once
-#include <assert.h>
+
 #include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 #define BOARD_SIZE 9
 
@@ -25,10 +22,11 @@ struct SudokuBoard_impl
     int solved_counter;
     Cell **data; // 9x9 cell board
 
-    Cell **p_rows[BOARD_SIZE];                   // rows pointers
-    Cell **p_cols[BOARD_SIZE];                   // cols pointers
-    Cell **p_boxes[BOARD_SIZE];                  // boxes pointers
-    Cell *solved_cells[BOARD_SIZE * BOARD_SIZE]; // solved cell pointers (maximum)
+    Cell **p_rows[BOARD_SIZE];  // rows pointers
+    Cell **p_cols[BOARD_SIZE];  // cols pointers
+    Cell **p_boxes[BOARD_SIZE]; // boxes pointers
+    Cell *solved_cells[BOARD_SIZE *
+                       BOARD_SIZE]; // solved cell pointers (maximum)
 };
 
 typedef struct SudokuBoard_impl SudokuBoard;
@@ -40,8 +38,8 @@ bool is_in_list(Cell **p_array, int size, Cell *p);
 void print_candidate_num(SudokuBoard *p_board);
 void print_solution(SudokuBoard *p_board);
 
-bool is_candidate(Cell *cell, int value);
 void set_candidate(Cell *cell, int value);
+bool is_candidate(Cell *cell, int value);
 void unset_candidate(Cell *cell, int value);
 void set_candidates(Cell *cell, int *candidates, int size);
 int *get_candidates(Cell *cell);

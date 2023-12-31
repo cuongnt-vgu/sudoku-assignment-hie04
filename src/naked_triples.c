@@ -1,4 +1,6 @@
 #include "naked_triples.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 int is_in_triples(int triples[3], int value)
 {
@@ -122,6 +124,5 @@ int naked_triples(SudokuBoard *p_board)
         }
 
     }
-    
     return counter;
 }

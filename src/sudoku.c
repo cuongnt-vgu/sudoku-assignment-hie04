@@ -1,4 +1,9 @@
 #include "sudoku.h"
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "hidden_singles.h"
 #include "naked_pairs.h"
 #include "naked_triples.h"

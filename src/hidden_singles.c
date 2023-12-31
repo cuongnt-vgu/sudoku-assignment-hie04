@@ -1,55 +1,54 @@
 #include "hidden_singles.h"
+#include <stdlib.h>
 
-int find_hidden_single_values(Cell **p_cells, int *hidden_single_values) {
-    int numHiddenValue = 0;
-    for (int i = 1; i <= BOARD_SIZE; i++) {
-        int counter = 0;
-        for (int j = 0; j < BOARD_SIZE; j++) {
-            if (p_cells[j]->fixed || p_cells[j]->num_candidates == 1) continue;
-            counter += is_candidate(p_cells[j], i);
-        }
-        if (counter == 1) hidden_single_values[numHiddenValue++] = i;
+
+int check_hidden_single_values(Cell **p_cells, int possible, int index)
+{
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        if (i == index || p_cells[i]->num_candidates == 1) continue;
+        if (is_candidate(p_cells[i], possible)) return 0;
     }
-    return numHiddenValue;
+    return 1;
 }
 
-void find_hidden_single(Cell **p_cells, HiddenSingle *p_hidden_singles, int *p_counter) {
-    int *hidden_single_values = (int*) malloc(BOARD_SIZE * sizeof(int));
-    int numHiddenValue;
-    numHiddenValue = find_hidden_single_values(p_cells, hidden_single_values);
-    for (int i = 0; i < numHiddenValue; i++) {
-        for (int j = 0; j < BOARD_SIZE; j++) {
-            if (p_cells[j]->fixed) continue;
-            bool check = true;
-            for (int k = 0; k < *p_counter; k++) 
-                if (p_cells[j] == p_hidden_singles[k].p_cell) {
-                    check = false;
+// find hidden single cells in a row, in a collumn or in a box
+void find_hidden_single(Cell **p_cells, HiddenSingle *p_hidden_singles,
+                        int *p_counter)
+{  
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        for (int j = 0; j < BOARD_SIZE; j++)
+        {
+            if (p_cells[i]->num_candidates > 1 && p_cells[i]->candidates[j] == 1)
+            {
+                if (check_hidden_single_values(p_cells, j+1, i))
+                {
+                    p_hidden_singles[(*p_counter)++] = (HiddenSingle){p_cells[i], j+1};
                     break;
                 }
-            if (!check) continue;
-            if (is_candidate(p_cells[j], hidden_single_values[i])) {
-                p_hidden_singles[*p_counter].p_cell = p_cells[j];
-                p_hidden_singles[*p_counter].value = hidden_single_values[i];
-                (*p_counter)++;
             }
         }
     }
-    free(hidden_single_values);
 }
 
-int hidden_singles(SudokuBoard *p_board) {
-    int num_hidden_single = 0;
-    HiddenSingle *hidden_singles = (HiddenSingle*) malloc(BOARD_SIZE * BOARD_SIZE * sizeof(HiddenSingle));
-    for (int i = 0; i < BOARD_SIZE; i++) {
-        find_hidden_single(p_board->p_rows[i], hidden_singles, &num_hidden_single);
-        find_hidden_single(p_board->p_cols[i], hidden_singles, &num_hidden_single);
-        find_hidden_single(p_board->p_boxes[i], hidden_singles, &num_hidden_single);
+// find hidden single cells in a board, return the number of hidden single cells
+int hidden_singles(SudokuBoard *p_board)
+{
+    int counter = 0;
+    HiddenSingle p_hidden_singles[BOARD_SIZE * BOARD_SIZE];
+
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        find_hidden_single(p_board->p_rows[i], p_hidden_singles, &counter);
+        find_hidden_single(p_board->p_cols[i], p_hidden_singles, &counter);
+        find_hidden_single(p_board->p_boxes[i], p_hidden_singles, &counter);
     }
-    for (int i = 0; i < num_hidden_single; i++) {
-        for (int j = 1; j <= BOARD_SIZE; j++) 
-            if (is_candidate(hidden_singles[i].p_cell, j)) unset_candidate(hidden_singles[i].p_cell, j);
-        set_candidate(hidden_singles[i].p_cell, hidden_singles[i].value);
+    int offset = 0;
+    for (int i = 0; i < counter; i++)
+    {
+        if (p_hidden_singles[i].p_cell->num_candidates == 1) offset += 1;
+        set_candidates(p_hidden_singles[i].p_cell,  (int *)(int[]){p_hidden_singles[i].value}, 1);
     }
-    free(hidden_singles);
-    return num_hidden_single;
+    return counter - offset;
 }
